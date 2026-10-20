@@ -1,12 +1,512 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>КУКАРЕКУ — БЕЗУМНЫЙ ПОКЕР</title></head>
-<body style="background:#0a0616;color:#fff;font-family:sans-serif;padding:40px;text-align:center">
-<h1 style="font-family:'Creepster',cursive;font-size:3rem;color:#ffc93c;text-shadow:3px 3px 0 #ff0099">КУКАРЕКУ</h1>
-<p>Покеррум загружен. 4 комнаты: v1, v2, v3, v4.</p>
-<p><a style="color:#ffc93c;font-family:'Rubik Mono One',monospace" href="https://mad-poker.github.io/v1/">v1</a> ·
-<a href="https://mad-poker.github.io/v2/">v2</a> ·
-<a href="https://mad-poker.github.io/v3/">v3</a> ·
-<a href="https://mad-poker.github.io/v4/">v4</a></p>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>БЕЗУМНЫЙ ПОКЕР · ЛОББИ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/unbounded@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/unbounded@5/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/unbounded@5/900.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/rubik@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/rubik@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/rubik@5/700.css">
+<style>
+:root{
+  --bg:#0a0616; --panel:#150c26; --panel2:#1d1136;
+  --line:rgba(255,255,255,.09);
+  --pink:#ff2e88; --cyan:#25e7ff; --lime:#b8ff3d; --gold:#ffc93c; --violet:#8a5cff;
+  --text:#f4eefc; --muted:#a79fc0;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(138,92,255,.18), transparent 60%),
+    radial-gradient(900px 500px at 10% 110%, rgba(255,46,136,.14), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Rubik',system-ui,sans-serif;
+  min-height:100vh; overflow-x:hidden;
+}
+::selection{background:var(--pink);color:#08040f}
+#fx{position:fixed;inset:0;z-index:0;pointer-events:none}
+#fx.chaos{animation:hue 3s linear infinite}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+.scanlines{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px);}
+.vignette{position:fixed;inset:0;z-index:59;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);}
+
+/* ---------- TOPBAR ---------- */
+.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:12px 20px;background:rgba(10,6,22,.78);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);}
+.logo{font-family:'Unbounded';font-weight:900;font-size:18px;letter-spacing:1px;cursor:pointer;user-select:none;
+  color:#fff;text-shadow:2px 0 var(--pink), -2px 0 var(--cyan);line-height:1;}
+.logo span{color:var(--pink)}
+.logo small{display:block;font-family:'Rubik';font-weight:500;font-size:9px;letter-spacing:3px;color:var(--muted);margin-top:4px;text-shadow:none}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{font-family:'Unbounded';font-weight:700;font-size:10px;letter-spacing:1px;color:var(--muted);
+  background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;transition:.25s}
+.tab:hover{color:var(--text);border-color:var(--violet)}
+.tab.active{color:#08040f;background:var(--lime);border-color:var(--lime);box-shadow:0 0 18px rgba(184,255,61,.45)}
+.hud{margin-left:auto;display:flex;gap:10px;align-items:stretch;flex-wrap:wrap}
+.hud-box{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:6px 12px;
+  display:flex;flex-direction:column;gap:2px;min-width:96px}
+.hud-box small{font-size:8px;letter-spacing:2px;color:var(--muted);font-weight:700}
+.hud-box b{font-family:'Unbounded';font-weight:700;font-size:14px}
+#balanceVal{color:var(--gold)}
+#balanceVal.weird{color:#ff4d6d;animation:shake .3s infinite}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}100%{transform:translate(0,0)}}
+.balance-box{border-color:rgba(255,201,60,.4);cursor:help}
+.online b{color:var(--cyan)}
+.online .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 8px var(--lime);margin-right:5px;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+.clock b{color:var(--violet)}
+.snd{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;color:var(--text);
+  font-size:16px;width:42px;cursor:pointer;transition:.25s}
+.snd:hover{border-color:var(--pink)}
+
+/* ---------- TICKER ---------- */
+.ticker{position:relative;z-index:10;overflow:hidden;background:linear-gradient(90deg,var(--pink),var(--violet),var(--cyan));
+  color:#08040f;padding:7px 0;border-block:1px solid rgba(0,0,0,.4)}
+.ticker-track{display:flex;gap:42px;width:max-content;animation:tick 34s linear infinite;
+  font-weight:700;font-size:11px;letter-spacing:1.5px;white-space:nowrap}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- HERO ---------- */
+main{position:relative;z-index:10}
+.hero{padding:52px 20px 6px;text-align:center}
+.glitch-title{font-family:'Unbounded';font-weight:900;font-size:clamp(26px,5vw,60px);letter-spacing:2px;position:relative;color:#fff}
+.glitch-title::before,.glitch-title::after{content:attr(data-text);position:absolute;inset:0;opacity:.85;pointer-events:none}
+.glitch-title::before{color:var(--cyan);animation:gl1 2.7s infinite steps(1)}
+.glitch-title::after{color:var(--pink);animation:gl2 3.1s infinite steps(1)}
+@keyframes gl1{0%,86%{clip-path:inset(0 0 100% 0);transform:none}88%{clip-path:inset(10% 0 55% 0);transform:translateX(-4px)}92%{clip-path:inset(60% 0 8% 0);transform:translateX(3px)}96%{clip-path:inset(30% 0 40% 0);transform:translateX(-2px)}100%{clip-path:inset(0 0 100% 0)}}
+@keyframes gl2{0%,80%{clip-path:inset(0 0 100% 0);transform:none}84%{clip-path:inset(70% 0 5% 0);transform:translateX(4px)}90%{clip-path:inset(5% 0 75% 0);transform:translateX(-3px)}95%{clip-path:inset(45% 0 30% 0);transform:translateX(2px)}100%{clip-path:inset(0 0 100% 0)}}
+.hero-sub{margin-top:14px;font-size:11px;letter-spacing:5px;color:var(--muted);font-weight:700}
+.hero-note{display:inline-block;margin-top:18px;padding:8px 16px;border:1px dashed var(--pink);border-radius:999px;
+  color:var(--pink);font-size:12px;font-weight:500;animation:notePulse 2.4s ease-in-out infinite}
+@keyframes notePulse{50%{box-shadow:0 0 22px rgba(255,46,136,.45);background:rgba(255,46,136,.06)}}
+
+/* ---------- ROOMS ---------- */
+.rooms{max-width:1460px;margin:0 auto;padding:34px 20px 10px;display:grid;gap:18px;
+  grid-template-columns:repeat(4,minmax(0,1fr));}
+@media(max-width:1120px){.rooms{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.rooms{grid-template-columns:1fr}}
+.room{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;
+  overflow:hidden;display:flex;flex-direction:column;position:relative;transition:box-shadow .3s,border-color .3s;
+  will-change:transform;}
+.room:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 24px 60px -22px var(--accent)}
+.room-media{position:relative;aspect-ratio:16/10;overflow:hidden;background:#000}
+.room-media svg{position:absolute;inset:0;width:100%;height:100%;display:block;transition:transform .6s}
+.room:hover .room-media svg{transform:scale(1.06) rotate(.4deg)}
+.media-scan{position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 2px, transparent 2px 4px)}
+.ver{position:absolute;top:10px;left:10px;font-family:'Unbounded';font-weight:700;font-size:10px;letter-spacing:1px;
+  padding:4px 9px;border-radius:8px;background:rgba(0,0,0,.6);color:var(--accent);border:1px solid var(--accent);z-index:2}
+.live{position:absolute;top:10px;right:10px;z-index:2;display:flex;align-items:center;gap:6px;
+  font-size:9px;font-weight:700;letter-spacing:2px;color:#fff;background:rgba(0,0,0,.6);border:1px solid var(--line);
+  border-radius:8px;padding:4px 8px}
+.live i{width:6px;height:6px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 8px #ff3b3b;animation:blink 1.2s infinite}
+.room-body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.room-body h3{font-family:'Unbounded';font-weight:700;font-size:14px;letter-spacing:.5px;transition:color .25s}
+.room:hover h3{color:var(--accent)}
+.tag{font-size:12px;color:var(--muted);line-height:1.5;min-height:36px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;padding:6px 9px;display:flex;flex-direction:column;gap:2px}
+.stat small{font-size:8px;letter-spacing:2px;color:var(--muted);font-weight:700}
+.stat b{font-size:12px;font-weight:700}
+.chaos-row{display:flex;align-items:center;gap:8px}
+.chaos-row small{font-size:8px;letter-spacing:2px;color:var(--muted);font-weight:700;white-space:nowrap}
+.chaos{display:flex;gap:3px;flex:1}
+.chaos i{height:6px;flex:1;border-radius:3px;background:rgba(255,255,255,.08)}
+.chaos i.on{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.enter{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:12px;
+  font-family:'Unbounded';font-weight:700;font-size:11px;letter-spacing:1.5px;color:#08040f;text-decoration:none;
+  background:var(--accent);box-shadow:0 5px 0 rgba(0,0,0,.4);transition:.2s}
+.enter:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 7px 0 rgba(0,0,0,.4)}
+.enter:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.enter .arr{transition:transform .2s}
+.enter:hover .arr{transform:translateX(4px)}
+
+/* ---------- PERKS ---------- */
+.perks{max-width:1460px;margin:26px auto 0;padding:0 20px;display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.perks{grid-template-columns:1fr}}
+.perk{border:1px solid var(--line);border-radius:16px;padding:16px;background:rgba(255,255,255,.03);
+  display:flex;gap:12px;align-items:flex-start;transition:.25s}
+.perk:hover{border-color:var(--violet);transform:translateY(-3px)}
+.perk .ico{font-size:24px;filter:drop-shadow(0 0 8px rgba(138,92,255,.6))}
+.perk b{font-family:'Unbounded';font-size:11px;letter-spacing:1px;display:block;margin-bottom:6px}
+.perk p{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* ---------- FOOTER ---------- */
+footer{position:relative;z-index:10;margin-top:44px;border-top:1px solid var(--line);padding:26px 20px 46px;
+  text-align:center;color:var(--muted);font-size:12px;line-height:2}
+footer .fine{font-size:10px;letter-spacing:1px;opacity:.7}
+
+/* ---------- TOASTS ---------- */
+.toasts{position:fixed;right:16px;bottom:16px;z-index:70;display:flex;flex-direction:column;gap:10px;max-width:320px}
+.toast{background:rgba(27,16,48,.95);border:1px solid var(--tc,var(--pink));border-left:4px solid var(--tc,var(--pink));
+  border-radius:12px;padding:10px 14px;font-size:12.5px;line-height:1.45;box-shadow:0 12px 30px -10px #000;
+  animation:tIn .35s ease, tOut .45s ease 4.6s forwards}
+@keyframes tIn{from{transform:translateX(40px);opacity:0}}
+@keyframes tOut{to{transform:translateY(10px);opacity:0}}
+
+/* svg mini-animations */
+.floaty{animation:floatY 4s ease-in-out infinite}
+@keyframes floatY{50%{transform:translateY(-6px)}}
+.flick{animation:flick 2.2s steps(2) infinite}
+@keyframes flick{0%,60%{opacity:.35}61%,100%{opacity:.05}}
+.rays{animation:spin 90s linear infinite;transform-origin:200px 125px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulseGlow{animation:pGlow 3s ease-in-out infinite}
+@keyframes pGlow{50%{opacity:.35}}
+</style>
+</head>
+<body>
+
+<canvas id="fx"></canvas>
+
+<header class="topbar">
+  <div class="logo" id="logo" title="нажми 3 раза. если осмелишься.">🃏 БЕЗУМНЫЙ<span>ПОКЕР</span><small>ЛОББИ · ВХОД ВОСПРЕЩЁН ДОБРОВОЛЬНО</small></div>
+  <nav class="tabs">
+    <button class="tab active">ЛОББИ</button>
+    <button class="tab" data-toast="Касса ушла за чаем. Вернётся никогда.">КАССА</button>
+    <button class="tab" data-toast="Настройки сбежали в комнату v3. Им там нравится.">НАСТРОЙКИ</button>
+    <button class="tab" data-toast="Поддержка отвечает со скоростью 1 ответ в полнолуние.">ПОДДЕРЖКА</button>
+  </nav>
+  <div class="hud">
+    <div class="hud-box balance-box" id="balanceBox" title="фишки ненастоящие. как и друзья.">
+      <small>🪙 БАЛАНС</small><b id="balanceVal">—</b>
+    </div>
+    <div class="hud-box online"><small><span class="dot"></span>ОНЛАЙН</small><b id="onlineVal">—</b></div>
+    <div class="hud-box clock"><small>ВРЕМЯ ПО БОЛОТУ</small><b id="clockVal">25:71:00</b></div>
+    <button class="snd" id="sndBtn" title="звук">🔊</button>
+  </div>
+</header>
+
+<div class="ticker"><div class="ticker-track" id="tickerTrack">
+  <span>🐹 КУРС ХОМЯКОИНА РАСТЁТ</span><span>♥ АДМИНИСТРАЦИЯ НЕСЁТ ОТВЕТСТВЕННОСТЬ ЗА УКРАДЕННЫЕ БАНКИ</span>
+  <span>🐔 ПЕТУХ ШАРАХНУЛСЯ ОТ КОТА</span><span> ДИЛЕР УЛЫБАЕТСЯ 7-Й ЧАС ПОДРЯД</span>
+  <span>⚠ СТАВКИ ПРИНИМАЕМ ЛУКОМ И ВАЙБАМИ</span><span>👀 ЗА ТОБОЙ СМОТРЯТ. ЭТО НОРМАЛЬНО</span>
+  <span>💸 ВЫПЛАТЫ БЫЛИ ВЧЕРА. ВОЗМОЖНО</span><span>🛸 СТОЛ №666 СНОВА ДВИГАЕТСЯ</span>
+</div></div>
+
+<main>
+  <section class="hero">
+    <h1 class="glitch-title" data-text="ВЫБЕРИ СВОЙ СТОЛ">ВЫБЕРИ СВОЙ СТОЛ</h1>
+    <p class="hero-sub">СТОЛ СЛОМАН · КАРТЫ ЖИВЫЕ · ДИЛЕР ДЕРЖИТСЯ</p>
+    <p class="hero-note">Регистрация закрыта. Ты уже здесь.</p>
+  </section>
+
+  <section class="rooms" id="rooms">
+
+    <!-- ================= ROOM v1 ================= -->
+    <article class="room" style="--accent:#ffc93c">
+      <div class="room-media">
+        <img src="images/v1.jpg" alt="Комната v1" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <div class="media-scan"></div><span class="ver">v1</span><span class="live"><i></i>LIVE</span>
+      </div>
+      <div class="room-body">
+        <h3>«КЛАССИКА БЕЗУМИЯ»</h3>
+        <p class="tag">Пики — джокеры. Кот спит на банке. Тётя Зина уже ол-ин.</p>
+        <div class="stats">
+          <div class="stat"><small>ИГРОКОВ</small><b class="pval">—</b></div>
+          <div class="stat"><small>СТАВКИ</small><b>5 / 10</b></div>
+        </div>
+        <div class="chaos-row"><small>ХАОС</small><div class="chaos"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></div>
+        <a class="enter" href="https://mad-poker.github.io/v1/" target="_blank" rel="noopener">ВОЙТИ В КОМНАТУ <span class="arr">→</span></a>
+      </div>
+    </article>
+
+    <!-- ================= ROOM v2 ================= -->
+    <article class="room" style="--accent:#25e7ff">
+      <div class="room-media">
+        <img src="images/v2.jpg" alt="Комната v2" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <div class="media-scan"></div><span class="ver">v2</span><span class="live"><i></i>LIVE</span>
+      </div>
+      <div class="room-body">
+        <h3>«НЕОНОВЫЙ ХАОС»</h3>
+        <p class="tag">Хомяк-аналитик против. Но он хомяк. Синтвейв, бабки, ол-ин на закате.</p>
+        <div class="stats">
+          <div class="stat"><small>ИГРОКОВ</small><b class="pval">—</b></div>
+          <div class="stat"><small>СТАВКИ</small><b>10 / 25</b></div>
+        </div>
+        <div class="chaos-row"><small>ХАОС</small><div class="chaos"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></div>
+        <a class="enter" href="https://mad-poker.github.io/v2/" target="_blank" rel="noopener">ВОЙТИ В КОМНАТУ <span class="arr">→</span></a>
+      </div>
+    </article>
+
+    <!-- ================= ROOM v3 ================= -->
+    <article class="room" style="--accent:#ff2e88">
+      <div class="room-media">
+        <img src="images/v3.jpg" alt="Комната v3" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <div class="media-scan"></div><span class="ver">v3</span><span class="live"><i></i>LIVE</span>
+      </div>
+      <div class="room-body">
+        <h3>«ТЁРН И КАША»</h3>
+        <p class="tag">Победителей нет. Только те, кто ещё не проиграл. Мозги в кашу.</p>
+        <div class="stats">
+          <div class="stat"><small>ИГРОКОВ</small><b class="pval">—</b></div>
+          <div class="stat"><small>СТАВКИ</small><b>∞ / ∞</b></div>
+        </div>
+        <div class="chaos-row"><small>ХАОС</small><div class="chaos"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div></div>
+        <a class="enter" href="https://mad-poker.github.io/v3/" target="_blank" rel="noopener">ВОЙТИ В КОМНАТУ <span class="arr">→</span></a>
+      </div>
+    </article>
+
+    <!-- ================= ROOM v4 ================= -->
+    <article class="room" style="--accent:#58e07c">
+      <div class="room-media">
+        <img src="images/v4.jpg" alt="Комната v4" loading="eager" style="width:100%;height:100%;object-fit:cover;display:block;">
+        <div class="media-scan"></div><span class="ver">v4</span><span class="live"><i></i>LIVE</span>
+      </div>
+      <div class="room-body">
+        <h3>«СЛОМАННЫЙ СТОЛ»</h3>
+        <p class="tag">Карты живые. Дилер держится. Пока. Комикс-стиль, трещина через сукно.</p>
+        <div class="stats">
+          <div class="stat"><small>ИГРОКОВ</small><b class="pval">—</b></div>
+          <div class="stat"><small>СТАВКИ</small><b>1 / 2</b></div>
+        </div>
+        <div class="chaos-row"><small>ХАОС</small><div class="chaos"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></div>
+        <a class="enter" href="https://mad-poker.github.io/v4/" target="_blank" rel="noopener">ВОЙТИ В КОМНАТУ <span class="arr">→</span></a>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="perks">
+    <div class="perk"><span class="ico">🐈</span><div><b>ЧЕСТНОСТЬ</b><p>Кот подтвердил: банки украдены ответственно. Петух шарался, но подписал.</p></div></div>
+    <div class="perk"><span class="ico">🪪</span><div><b>ЛИЦЕНЗИЯ</b><p>Выдана болотом №7. Продлению не подлежит. Отзыву — тоже. Смирись.</p></div></div>
+    <div class="perk"><span class="ico">💸</span><div><b>ВЫПЛАТЫ</b><p>Вчера™. Всегда вчера. Завтра не предусмотрено регламентом.</p></div></div>
+  </section>
+</main>
+
+<footer>
+  © 13-й месяц, год ∞ · БЕЗУМНЫЙ ПОКЕР · все права украдены<br>
+  <span class="fine">администрация не несёт ответственность за украденные банки ♥ ип «болото» · курс хомякоина растёт</span>
+</footer>
+
+<div class="toasts" id="toasts"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<script>
+(function(){
+"use strict";
+/* ================= CANVAS FX ================= */
+var cv=document.getElementById('fx'),ctx=cv.getContext('2d'),W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;
+  cv.width=Math.floor(W*DPR);cv.height=Math.floor(H*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);}
+window.addEventListener('resize',resize);resize();
+
+var COLORS=['#ff2e88','#25e7ff','#b8ff3d','#ffc93c','#8a5cff'];
+var SUITS=['\u2660','\u2665','\u2666','\u2663'];
+var chaos=false;
+var mouse={x:-9999,y:-9999};
+var parts=[],sparks=[],eyes=[];
+var gUntil=0,gNext=performance.now()+4000,nextEye=performance.now()+9000;
+
+function rnd(a,b){return a+Math.random()*(b-a);}
+function makeP(init){
+  var t=Math.random();
+  return {x:rnd(0,W),y:init?rnd(0,H):H+60,vx:rnd(-.25,.25),vy:rnd(-.75,-.25),
+    type:t<.5?0:(t<.8?1:2),size:rnd(12,30),rot:rnd(0,6.28),vr:rnd(-.01,.01),
+    c:COLORS[Math.random()*COLORS.length|0],a:rnd(.10,.34),ph:rnd(0,6000),
+    suit:SUITS[Math.random()*4|0]};
+}
+window.addEventListener('pointermove',function(e){
+  mouse.x=e.clientX;mouse.y=e.clientY;
+  for(var i=0;i<2;i++)sparks.push({x:e.clientX+rnd(-6,6),y:e.clientY+rnd(-6,6),life:1,c:COLORS[Math.random()*COLORS.length|0]});
+  if(sparks.length>90)sparks.splice(0,sparks.length-90);
+});
+
+function drawChip(p){
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+  ctx.globalAlpha=p.a;ctx.strokeStyle=p.c;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(0,0,p.size*.5,0,6.283);ctx.fillStyle=p.c;ctx.globalAlpha=p.a*.35;ctx.fill();
+  ctx.globalAlpha=p.a;ctx.stroke();
+  ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc(0,0,p.size*.36,0,6.283);ctx.stroke();ctx.setLineDash([]);
+  ctx.restore();
+}
+function drawCard(p){
+  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);
+  ctx.globalAlpha=p.a;ctx.strokeStyle=p.c;ctx.lineWidth=1.6;
+  var w=p.size*.7,h=p.size;
+  ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(-w/2,-h/2,w,h,3);else ctx.rect(-w/2,-h/2,w,h);
+  ctx.stroke();
+  ctx.fillStyle=p.c;ctx.font=Math.floor(p.size*.55)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(p.suit,0,1);
+  ctx.restore();
+}
+function loop(now){
+  ctx.clearRect(0,0,W,H);
+  var target=Math.min(chaos?150:70,Math.round(W*H/22000)+(chaos?45:0));
+  while(parts.length<target)parts.push(makeP(true));
+  if(parts.length>target)parts.length=target;
+  var sp=chaos?2.2:1;
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];
+    p.x+=p.vx*sp+Math.sin((now+p.ph)/1400)*.25;
+    p.y+=p.vy*sp;p.rot+=p.vr*sp;
+    var dx=p.x-mouse.x,dy=p.y-mouse.y,d2=dx*dx+dy*dy;
+    if(d2<14400&&d2>1){var d=Math.sqrt(d2);p.x+=dx/d*1.4;p.y+=dy/d*1.4;}
+    if(p.y<-70){p.y=H+70;p.x=rnd(0,W);}
+    if(p.x<-70)p.x=W+70;if(p.x>W+70)p.x=-70;
+    if(p.type===0){ctx.globalAlpha=p.a;ctx.fillStyle=p.c;ctx.font=p.size+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p.suit,p.x,p.y);}
+    else if(p.type===1)drawChip(p);else drawCard(p);
+  }
+  ctx.globalAlpha=1;
+  for(var s=sparks.length-1;s>=0;s--){var q=sparks[s];q.life-=.045;
+    if(q.life<=0){sparks.splice(s,1);continue;}
+    ctx.globalAlpha=q.life*.6;ctx.fillStyle=q.c;ctx.beginPath();ctx.arc(q.x,q.y,2.2*q.life,0,6.283);ctx.fill();}
+  ctx.globalAlpha=1;
+  /* eyes */
+  if(now>nextEye){eyes.push({x:rnd(W*.1,W*.9),y:rnd(H*.15,H*.8),born:now,life:5200});
+    nextEye=now+(chaos?5000:14000)+Math.random()*8000;}
+  for(var e=eyes.length-1;e>=0;e--){
+    var ey=eyes[e],age=now-ey.born;
+    if(age>ey.life){eyes.splice(e,1);continue;}
+    var a=Math.min(1,age/400)*Math.min(1,(ey.life-age)/600)*.9;
+    var cyc=age%2600,sy=cyc>2400?.15:1;
+    var ang=Math.atan2(mouse.y-ey.y,mouse.x-ey.x),px=Math.cos(ang)*3,py=Math.sin(ang)*2;
+    ctx.save();ctx.shadowColor='#fff';ctx.shadowBlur=16;ctx.fillStyle='rgba(240,244,255,'+a+')';
+    for(var sd=-1;sd<=1;sd+=2){ctx.beginPath();ctx.ellipse(ey.x+sd*15,ey.y,9,5.5*sy,0,0,6.283);ctx.fill();}
+    ctx.shadowBlur=0;ctx.fillStyle='rgba(10,4,18,'+a+')';
+    for(var sd2=-1;sd2<=1;sd2+=2){ctx.beginPath();ctx.arc(ey.x+sd2*15+px,ey.y+py,2.6*sy,0,6.283);ctx.fill();}
+    ctx.restore();
+  }
+  /* glitch slices */
+  if(now>gNext){gUntil=now+240+Math.random()*260;gNext=now+(chaos?1600:6500)+Math.random()*5000;}
+  if(now<gUntil){
+    ctx.save();ctx.setTransform(1,0,0,1,0,0);
+    for(var g=0;g<3;g++){
+      var sy2=Math.floor(Math.random()*cv.height),sh=Math.floor(8+Math.random()*42),dx2=Math.floor((Math.random()-.5)*90*DPR);
+      ctx.drawImage(cv,0,sy2,cv.width,sh,dx2,sy2,cv.width,sh);
+    }
+    ctx.globalCompositeOperation='lighter';
+    ctx.fillStyle='rgba(37,231,255,.07)';ctx.fillRect(0,Math.random()*cv.height,cv.width,2+Math.random()*6);
+    ctx.fillStyle='rgba(255,46,136,.07)';ctx.fillRect(0,Math.random()*cv.height,cv.width,2+Math.random()*6);
+    ctx.restore();ctx.globalCompositeOperation='source-over';
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ================= FAKE HUD ================= */
+var balEl=document.getElementById('balanceVal');
+var bal=Math.floor(5000+Math.random()*85000),balShown=0;
+var WEIRD=['-3050','\u221E','NaN','404','\uD83D\uDC39\u00D77','???','\u0434\u0430'];
+function fmt(n){return n.toLocaleString('ru-RU');}
+function setBal(target){
+  var from=balShown,t0=performance.now();
+  function step(t){var k=Math.min(1,(t-t0)/550);
+    balShown=Math.round(from+(target-from)*(1-Math.pow(1-k,3)));
+    balEl.textContent=fmt(balShown);
+    if(k<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+setBal(bal);
+setInterval(function(){
+  if(Math.random()<.14){
+    balEl.classList.add('weird');
+    balEl.textContent=WEIRD[Math.random()*WEIRD.length|0];
+    setTimeout(function(){balEl.classList.remove('weird');setBal(bal);},1900);
+  }else{
+    bal=Math.max(-9999,bal+Math.floor(Math.random()*3600-1500));
+    setBal(bal);
+  }
+},5000);
+
+var onEl=document.getElementById('onlineVal'),on=Math.floor(1200+Math.random()*2800);
+onEl.textContent=fmt(on);
+setInterval(function(){
+  if(Math.random()<.05)on=1;else on=Math.max(1,on+Math.floor(Math.random()*80-35));
+  onEl.textContent=fmt(on);
+},4000);
+
+var ckEl=document.getElementById('clockVal');
+function pad(n){return n<10?'0'+n:''+n;}
+setInterval(function(){var d=new Date();
+  ckEl.textContent=pad((d.getHours()+13)%26)+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());},1000);
+
+/* players per room */
+var pvals=[].slice.call(document.querySelectorAll('.pval'));
+pvals.forEach(function(el){el.textContent=Math.floor(3+Math.random()*60);});
+setInterval(function(){pvals.forEach(function(el){
+  var v=parseInt(el.textContent,10)||5;
+  v=Math.max(1,Math.min(666,v+Math.floor(Math.random()*9-4)));
+  el.textContent=v;});},6000);
+
+/* ticker seamless */
+var track=document.getElementById('tickerTrack');
+track.innerHTML+=track.innerHTML;
+
+/* ================= TOASTS ================= */
+var toastsBox=document.getElementById('toasts');
+var MSGS=[
+  '\u0411\u0430\u043B\u0430\u043D\u0441 \u043E\u0431\u043D\u043E\u0432\u043B\u0451\u043D. \u041D\u0435 \u0441\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0439 \u043A\u0430\u043A.',
+  '\u041A\u043E\u0442 \u0441\u043D\u043E\u0432\u0430 \u0441\u044A\u0435\u043B \u0442\u0432\u043E\u0439 \u043E\u043B\u043B-\u0438\u043D.',
+  '\u0414\u0438\u043B\u0435\u0440 \u0434\u0435\u0440\u0436\u0438\u0442\u0441\u044F. \u041F\u043E\u043A\u0430.',
+  '\u041A\u043E\u043C\u043D\u0430\u0442\u0430 v3 \u043F\u0440\u0438\u0441\u043B\u0430\u043B\u0430 \u043F\u0440\u0438\u0432\u0435\u0442. \u041E\u043D\u0430 \u043D\u0435 \u0434\u043E\u043B\u0436\u043D\u0430 \u0443\u043C\u0435\u0442\u044C \u043F\u0438\u0441\u0430\u0442\u044C.',
+  '\u0424\u0438\u0448\u043A\u0438 \u043D\u0435\u043D\u0430\u0441\u0442\u043E\u044F\u0449\u0438\u0435. \u0423\u0441\u043F\u043E\u043A\u043E\u0439\u0441\u044F.',
+  '\u041E\u043D\u043B\u0430\u0439\u043D \u0432\u044B\u0440\u043E\u0441 \u043D\u0430 \u043E\u0434\u043D\u043E\u0433\u043E. \u042D\u0442\u043E \u0442\u044B? \u0422\u044B \u0436\u0435 \u0443\u0436\u0435 \u0437\u0434\u0435\u0441\u044C.',
+  '\u041F\u0440\u0430\u0432\u0438\u043B\u0430 \u0440\u0430\u0443\u043D\u0434\u0430 \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0438\u0441\u044C. \u041D\u043E\u0432\u044B\u0435 \u043F\u0440\u0430\u0432\u0438\u043B\u0430 \u043D\u0435 \u043F\u0440\u0438\u0448\u043B\u0438.',
+  '\u0422\u0451\u0442\u044F \u0417\u0438\u043D\u0430 \u0441\u0442\u0430\u0432\u0438\u0442 \u0432\u0441\u0451. \u0412\u0441\u0451, \u043A\u0430\u0440\u043B.'
+];
+function toast(msg,color){
+  var d=document.createElement('div');d.className='toast';
+  d.style.setProperty('--tc',color||COLORS[Math.random()*COLORS.length|0]);
+  d.textContent=msg;toastsBox.appendChild(d);
+  setTimeout(function(){d.remove();},5200);
+  while(toastsBox.children.length>4)toastsBox.firstChild.remove();
+}
+setTimeout(function(){toast('\u0414\u043E\u0431\u0440\u043E \u043F\u043E\u0436\u0430\u043B\u043E\u0432\u0430\u0442\u044C. \u0412\u044B\u0445\u043E\u0434\u0430 \u043D\u0435\u0442.');},1200);
+(function autoToast(){setTimeout(function(){
+  toast(MSGS[Math.random()*MSGS.length|0]);autoToast();},9000+Math.random()*6000);})();
+
+/* ================= INTERACTIONS ================= */
+document.querySelectorAll('.tab[data-toast]').forEach(function(t){
+  t.addEventListener('click',function(){toast(t.dataset.toast);});
+});
+var sndOn=true,sndBtn=document.getElementById('sndBtn');
+sndBtn.addEventListener('click',function(){
+  sndOn=!sndOn;sndBtn.textContent=sndOn?'\uD83D\uDD0A':'\uD83D\uDD07';
+  toast(sndOn?'\u0417\u0432\u0443\u043A \u0432\u043A\u043B\u044E\u0447\u0435\u043D. \u041A\u0440\u0438\u043A\u0438 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u0441\u043B\u044B\u0448\u043D\u044B.':'\u0417\u0432\u0443\u043A \u0432\u044B\u043A\u043B\u044E\u0447\u0435\u043D. \u041A\u0440\u0438\u043A\u0438 \u0432\u0441\u0451 \u0440\u0430\u0432\u043D\u043E \u0441\u043B\u044B\u0448\u043D\u044B.');
+});
+var logoClicks=0,logo=document.getElementById('logo');
+logo.addEventListener('click',function(){
+  logoClicks++;
+  if(logoClicks===3){
+    logoClicks=0;chaos=!chaos;
+    cv.classList.toggle('chaos',chaos);
+    document.body.classList.toggle('chaos',chaos);
+    toast(chaos?'\u0425\u0410\u041E\u0421 \u041F\u0420\u0418\u041D\u042F\u0422. \u0414\u0435\u0440\u0436\u0438\u0441\u044C.':'\u0425\u0430\u043E\u0441 \u043E\u0442\u043C\u0435\u043D\u0451\u043D. \u0414\u0438\u043B\u0435\u0440 \u0432\u044B\u0434\u043E\u0445\u043D\u0443\u043B.',chaos?'#ff2e88':'#b8ff3d');
+  }
+});
+document.getElementById('balanceBox').addEventListener('click',function(){
+  toast('\u0424\u0438\u0448\u043A\u0438 \u043D\u0435\u043D\u0430\u0441\u0442\u043E\u044F\u0449\u0438\u0435. \u041A\u0430\u043A \u0438 \u0434\u0440\u0443\u0437\u044C\u044F.','#ffc93c');
+});
+/* 3D tilt on room cards */
+if(window.matchMedia('(pointer:fine)').matches){
+  document.querySelectorAll('.room').forEach(function(card){
+    card.addEventListener('mousemove',function(ev){
+      var r=card.getBoundingClientRect();
+      var x=(ev.clientX-r.left)/r.width-.5,y=(ev.clientY-r.top)/r.height-.5;
+      card.style.transform='perspective(900px) rotateX('+(-y*5)+'deg) rotateY('+(x*7)+'deg) translateY(-5px)';
+    });
+    card.addEventListener('mouseleave',function(){card.style.transform='';});
+  });
+}
+/* enter clicks whisper */
+document.querySelectorAll('.enter').forEach(function(a){
+  a.addEventListener('click',function(){
+    toast('\u041A\u043E\u043C\u043D\u0430\u0442\u0430 \u043F\u0440\u0438\u043D\u0438\u043C\u0430\u0435\u0442 \u0442\u0435\u0431\u044F. \u0421\u043E\u043F\u0440\u043E\u0442\u0438\u0432\u043B\u0435\u043D\u0438\u0435 \u0431\u0435\u0441\u043F\u043E\u043B\u0435\u0437\u043D\u043E.');
+  });
+});
+})();
+</script>
 </body>
 </html>
